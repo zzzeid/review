@@ -16,12 +16,15 @@ def install_certificate(repo, args):
     The response is saved in the ~/.arcrc file; moz-phab itself doesn't do any
     verification/parsing of the provided string (verification happens by passing
     it to the Phabricator server)."""
-    logger.info(
-        "LOGIN TO PHABRICATOR\nOpen this page in your browser and login "
-        "to Phabricator if necessary:\n\n%s/conduit/login/\n",
-        conduit.repo.phab_url,
-    )
-    token = prompt("Paste API Token from that page: ")
+    if not args.token:
+        logger.info(
+            "LOGIN TO PHABRICATOR\nOpen this page in your browser and login "
+            "to Phabricator if necessary:\n\n%s/conduit/login/\n",
+            conduit.repo.phab_url,
+        )
+        token = prompt("Paste API Token from that page: ")
+    else:
+        token = args.token
 
     # Call a method that requires authentication to both verify the token and clear
     # the default one-hour expiration of newly created tokens.
@@ -41,4 +44,10 @@ def add_parser(parser):
         action="store_true",
         help="Run VCS with only necessary extensions",
     )
+
+    cert_parser.add_argument(
+        "--token",
+        help="Phabricator API Token",
+    )
+
     cert_parser.set_defaults(func=install_certificate, needs_repo=True)
